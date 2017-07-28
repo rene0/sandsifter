@@ -38,4 +38,4 @@ injector: injector.o
 	$(CC) $(CFLAGS) -c $< -o $@ -Wall
 
 clean:
-	rm *.o injector
+	rm -f *.o injector
