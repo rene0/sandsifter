@@ -199,7 +199,11 @@ def cstr2py(s):
 
 # targeting python 2.6 support
 def int_to_comma(x):
-    if type(x) not in [type(0), type(0L)]:
+    try:
+        zero_long = 0L
+    except SyntaxError:
+        zero_long = 0
+    if type(x) not in (type(0), type(zero_long)):
         raise TypeError("Parameter must be an integer.")
     if x < 0:
         return '-' + int_to_comma(-x)
