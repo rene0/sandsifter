@@ -814,6 +814,7 @@ if __name__ == "__main__":
             collapse_all(c)
             (summary, lookup) = build_instruction_summary(c)
             textbox.text = summary
+            textbox.scroll_top()
         elif key == ord('g'):
             textbox.scroll_top()
         elif key == ord('G'):
