@@ -8,6 +8,7 @@
 
 # run as sudo for best results
 
+from __future__ import print_function
 import signal
 import sys
 import subprocess
@@ -26,6 +27,11 @@ import argparse
 import code
 import copy
 from ctypes import *
+
+try:
+    raw_input          # Python 2
+except NameError:
+    raw_input = input  # Python 3
 
 INJECTOR = "./injector"
 arch = ""
@@ -193,7 +199,11 @@ def cstr2py(s):
 
 # targeting python 2.6 support
 def int_to_comma(x):
-    if type(x) not in [type(0), type(0L)]:
+    try:
+        zero_long = 0L
+    except SyntaxError:
+        zero_long = 0
+    if type(x) not in (type(0), type(zero_long)):
         raise TypeError("Parameter must be an integer.")
     if x < 0:
         return '-' + int_to_comma(-x)
@@ -789,12 +799,12 @@ def main():
     if "--" in injector_args: injector_args.remove("--")
 
     if not args.len and not args.unk and not args.dis and not args.ill:
-        print "warning: no search type (--len, --unk, --dis, --ill) specified, results will not be recorded."
+        print("warning: no search type (--len, --unk, --dis, --ill) specified, results will not be recorded.")
         raw_input()
 
     if args.resume:
         if "-i" in injector_args:
-            print "--resume is incompatible with -i"
+            print("--resume is incompatible with -i")
             sys.exit(1)
 
         if os.path.exists(LAST):
@@ -802,7 +812,7 @@ def main():
                 insn = f.read()
                 injector_args.extend(['-i',insn])
         else:
-            print "no resume file found"
+            print("no resume file found")
             sys.exit(1)
 
     if not os.path.exists(OUTPUT):
