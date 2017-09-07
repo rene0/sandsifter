@@ -30,8 +30,10 @@ from ctypes import *
 
 try:
     raw_input          # Python 2
+    xrange
 except NameError:
     raw_input = input  # Python 3
+    xrange = range
 
 INJECTOR = "./injector"
 arch = ""
@@ -123,7 +125,7 @@ def disas_capstone(b):
         else:
             md = Cs(CS_ARCH_X86, CS_MODE_32)
     try:
-        (address, size, mnemonic, op_str) = md.disasm_lite(b, 0, 1).next()
+        (address, size, mnemonic, op_str) = next(md.disasm_lite(b, 0, 1))
     except StopIteration:
         mnemonic="(unk)"
         op_str=""
@@ -200,9 +202,9 @@ def cstr2py(s):
 # targeting python 2.6 support
 def int_to_comma(x):
     try:
-        zero_long = 0L
+        exec('zero_long = 0L') # Using Python 2
     except SyntaxError:
-        zero_long = 0
+        zero_long = 0 # Using Python 3
     if type(x) not in (type(0), type(zero_long)):
         raise TypeError("Parameter must be an integer.")
     if x < 0:
@@ -409,9 +411,9 @@ class Gui:
             for i in xrange(0, self.GRAYS):
                 curses.init_color(
                         self.GRAY_BASE + i,
-                        i * 1000 / (self.GRAYS - 1),
-                        i * 1000 / (self.GRAYS - 1),
-                        i * 1000 / (self.GRAYS - 1)
+                        int(i * 1000 / (self.GRAYS - 1)),
+                        int(i * 1000 / (self.GRAYS - 1)),
+                        int(i * 1000 / (self.GRAYS - 1))
                         )
                 curses.init_pair(
                         self.GRAY_BASE + i,
@@ -459,13 +461,13 @@ class Gui:
 
     def bracket(self, window, x, y, h, color):
         for i in xrange(1, h - 1):
-            window.addch(y + i, x, curses.ACS_VLINE, color)
-        window.addch(y, x, curses.ACS_ULCORNER, color)
-        window.addch(y + h - 1, x, curses.ACS_LLCORNER, color)
+            window.addch(int(y + i), x, curses.ACS_VLINE, color)
+        window.addch(int(y), x, curses.ACS_ULCORNER, color)
+        window.addch(int(y + h - 1), x, curses.ACS_LLCORNER, color)
 
     def vaddstr(self, window, x, y, s, color):
         for i in xrange(0, len(s)):
-            window.addch(y + i, x, s[i], color)
+            window.addch(int(y + i), x, s[i], color)
 
     def draw(self):
         try:
@@ -824,7 +826,8 @@ def main():
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
                 ).communicate()
-    arch = re.search(r".*(..)-bit.*", injector_bitness).group(1)
+    byteregex = re.compile(b'.*(..)-bit.*') # Hacky fix
+    arch = re.search(byteregex, injector_bitness).group(1).decode()
 
     ts = ThreadState()
     signal.signal(signal.SIGINT, exit_handler)
