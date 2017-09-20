@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 
 # we had a much more automated and intelligent approach to reducing the log, but
 # could not come up with a reasonable way to differentiate between a modr/m byte

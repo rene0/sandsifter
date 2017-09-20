@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 
 # instruction injector frontend
 
@@ -200,7 +200,7 @@ def cstr2py(s):
 # targeting python 2.6 support
 def int_to_comma(x):
     try:
-        zero_long = 0L
+        eval('zero_long = 0L')
     except SyntaxError:
         zero_long = 0
     if type(x) not in (type(0), type(zero_long)):
