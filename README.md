@@ -93,105 +93,105 @@ sudo ./sifter.py --unk --dis --len --sync --tick -- -P1 -t
 
 Sifter flags:
 
---len - 
+`--len` - 
 	search for length differences in all instructions (instructions that
 	executed differently than the disassembler expected, or did not
 	exist when the disassembler expected them to
 
---dis - 
+`--dis` - 
 	search for length differences in valid instructions (instructions that
 	executed differently than the disassembler expected)
 
---unk - 
+`--unk` - 
 	search for unknown instructions (instructions that the disassembler doesn't
 	know about but successfully execute)
 
---ill - 
+`--ill` - 
 	the inverse of --unk, search for invalid disassemblies (instructions that do
 	not successfully execute but that the disassembler acknowledges)
 
---tick - 
+`--tick` - 
 	periodically write the current instruction to disk
 
---save - 
+`--save` - 
 	save search progress on exit
 
---resume - 
+`--resume` - 
 	resume search from last saved state
 
---sync - 
+`--sync` - 
 	write search results to disk as they are found
 
---low-mem - 
+`--low-mem` - 
 	do not store results in memory
 
 Injector flags:
 
--b -
+`-b` -
 	mode: brute force
 
--r -
+`-r` -
 	mode: randomized fuzzing
 
--t -
+`-t` -
 	mode: tunneled fuzzing
 
--d -
+`-d` -
 	mode: externally directed fuzzing
 
--R -
+`-R` -
 	raw output mode
 
--T -
+`-T` -
 	text output mode
 
--x -
+`-x` -
 	write periodic progress to stderr
 
--0 -
+`-0` -
 	allow null dereference (requires sudo)
 
--D -
+`-D` -
 	allow duplicate prefixes
 
--N -
+`-N` -
 	no nx bit support
 
--s seed -
+`-s seed` -
 	in random search, seed value
 
--B brute_depth -
+`-B brute_depth` -
 	in brute search, maximum search depth
 
--P max_prefix -
+`-P max_prefix` -
 	maximum number of prefixes to search
 
--i instruction -
+`-i instruction` -
 	instruction at which to start search (inclusive)
 
--e instruction -
+`-e instruction` -
 	instruction at which to end search (exclusive)
 
--c core -
+`-c core` -
 	core on which to perform search
 
--X blacklist -
+`-X blacklist` -
 	blacklist the specified instruction
 
--j jobs -
+`-j jobs` -
 	number of simultaneous jobs to run
 
--l range_bytes -
+`-l range_bytes` -
 	number of base instruction bytes in each sub range
 
 
 ### Keys
 
-m: Mode - change the search mode (brute force, random, or tunnel) for the sifter
+`m`: Mode - change the search mode (brute force, random, or tunnel) for the sifter
 
-q: Quit - exit the sifter
+`q`: Quit - exit the sifter
 
-p: Pause - pause or unpause the search
+`p`: Pause - pause or unpause the search
 
 
 ### sudo
@@ -221,7 +221,7 @@ you are scanning.
 * algorithms: random tunneling brute driven/mutator
 * detailed results enumeration
 * screenshots of bug types, final results
-* grep ./injector
+* `grep ./injector`
 * 32 and 64 bit installs
 * prefixes and limitations
 * installing capstone help
