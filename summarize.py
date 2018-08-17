@@ -424,6 +424,7 @@ def merge_sets(instructions, attribute):
     return s
 
 if __name__ == "__main__":
+    import argparse
 
     #TODO: you need to track the WHOLE byte string and pass that to the
     # disassemblers - if the string was SHORTER than the disassembler thought,
@@ -440,13 +441,18 @@ if __name__ == "__main__":
     instructions = []
     processor = Processor()
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("log", type=argparse.FileType('r'),
+                               help="Sifter log file")
+    args = parser.parse_args()
+
     print("")
     print("beginning summarization.")
     print("note: this process may take up to an hour to complete, please be patient.")
     print("")
 
     print("loading sifter log:")
-    with open(sys.argv[1], "r") as f:
+    with args.log as f:
         lines = f.readlines()
         f.seek(0)
         for (i, l) in enumerate(lines):
