@@ -29,7 +29,7 @@ The search will take from a few hours to a few days, depending on the speed of
 and complexity of your processor.  When it is complete, summarize the results:
 
 ```
-./summarize.py data/log
+./summarize.py log {log_file}
 ```
 
 ![demo_summarizer](references/summarizer.png)
