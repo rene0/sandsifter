@@ -221,12 +221,12 @@ def is_valid_write_path(parser, arg):
         files_exist = [f for f in data_files if os.path.isfile(os.path.join(arg, f))]
         files_not_exist = list(set(files_exist) ^ set(data_files))
         if not files_exist:
-            print("No pre-existing files, writing logs to: %s" % os.path.abspath(arg))
+            print("info: No pre-existing files, writing logs to: %s" % os.path.abspath(arg))
             return arg
         else:
-             parser.error("Prexisting log files in %s\n\tChoose a different path or choose to move or overwrite them." % arg)
+             parser.error("warning: Prexisting log files in %s\n\tChoose a different path or choose to move or overwrite them." % arg)
     else:
-        parser.error("The path %s doesn't exist!\n\tChoose a different output path or create it." % arg)
+        parser.error("warning: The path %s doesn't exist!\n\tChoose a different output path or create it." % arg)
 
 def result_string(insn, result):
     s = "%30s %2d %2d %2d %2d (%s)\n" % (
@@ -772,11 +772,18 @@ def main():
 
     command_line = " ".join(sys.argv)
     
-    # Find available injector from list of options
-    for i in INJECTOR:
-        if os.access(i, os.X_OK):
-            INJECTOR = i
-            print("Using injector from: %s" % os.path.abspath(INJECTOR))
+    # Find valid injector binary
+    INJECTOR = [f for f in INJECTOR if os.access(f, os.X_OK)]
+    
+    # Check if list empty
+    if not INJECTOR:
+        print("error: No executable injector was found. Program will exit");
+        sys.exit(1)
+    else:
+        # Pick the first valid injector entry, this is not ideal but it should work fine
+        INJECTOR = INJECTOR[0]
+        print("info: Using injector from: %s" % INJECTOR)
+        
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--len", action="store_true", default=False,
@@ -852,7 +859,7 @@ def main():
                 insn = f.read()
                 injector_args.extend(['-i',insn])
         else:
-            print("no 'last' resume file found in path %s" % OUTPUT)
+            print("error: no 'last' resume file found in path %s" % OUTPUT)
             sys.exit(1)
 
 
