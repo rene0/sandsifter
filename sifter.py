@@ -33,7 +33,7 @@ try:
 except NameError:
     raw_input = input  # Python 3
 
-INJECTOR = "./injector"
+INJECTOR = ["/usr/bin/injector", "./injector"]
 arch = ""
 
 OUTPUT = "/tmp/sandsifter/data/"
@@ -762,7 +762,7 @@ def cleanup(gui, poll, injector, ts, tests, command_line, args):
     sys.exit(0)
 
 def main():
-    global arch, OUTPUT, LOG, SYNC, TICK, LAST
+    global arch, OUTPUT, LOG, SYNC, TICK, LAST, INJECTOR
     def exit_handler(signal, frame):
         cleanup(gui, poll, injector, ts, tests, command_line, args)
 
@@ -771,6 +771,12 @@ def main():
     gui = None
 
     command_line = " ".join(sys.argv)
+    
+    # Find available injector from list of options
+    for i in INJECTOR:
+        if os.access(i, os.X_OK):
+            INJECTOR = i
+            print("Using injector from: %s" % os.path.abspath(INJECTOR))
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--len", action="store_true", default=False,
