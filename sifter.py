@@ -36,7 +36,7 @@ except NameError:
 INJECTOR = "./injector"
 arch = ""
 
-OUTPUT = "./data/"
+OUTPUT = "/tmp/sandsifter/data/"
 LOG  = OUTPUT + "log"
 SYNC = OUTPUT + "sync"
 TICK = OUTPUT + "tick"
@@ -212,6 +212,21 @@ def int_to_comma(x):
         x, r = divmod(x, 1000)
         result = ",%03d%s" % (r, result)
     return "%d%s" % (x, result)
+
+# Validate if log files already exist in the specified path and return a handle if safe to write
+def is_valid_write_path(parser, arg):
+    arg = os.path.abspath(arg)
+    if os.path.exists(arg) and os.path.isdir(arg):
+        data_files = ["log", "sync", "tick", "last"]
+        files_exist = [f for f in data_files if os.path.isfile(os.path.join(arg, f))]
+        files_not_exist = list(set(files_exist) ^ set(data_files))
+        if not files_exist:
+            print("No pre-existing files, writing logs to: %s" % os.path.abspath(arg))
+            return arg
+        else:
+             parser.error("Prexisting log files in %s\n\tChoose a different path or choose to move or overwrite them." % arg)
+    else:
+        parser.error("The path %s doesn't exist!\n\tChoose a different output path or create it." % arg)
 
 def result_string(insn, result):
     s = "%30s %2d %2d %2d %2d (%s)\n" % (
@@ -747,7 +762,7 @@ def cleanup(gui, poll, injector, ts, tests, command_line, args):
     sys.exit(0)
 
 def main():
-    global arch
+    global arch, OUTPUT, LOG, SYNC, TICK, LAST
     def exit_handler(signal, frame):
         cleanup(gui, poll, injector, ts, tests, command_line, args)
 
@@ -791,17 +806,36 @@ def main():
     parser.add_argument("--low-mem", action="store_true", default=False,
             help="do not store results in memory"
             )
+    parser.add_argument("--out", dest="logpath", required=False,
+            help="folder path to write sandsifter log files", metavar="FOLDER",
+            type=lambda out: is_valid_write_path(parser, out)
+            )
+    
     parser.add_argument("injector_args", nargs=argparse.REMAINDER)
 
     args = parser.parse_args()
 
     injector_args = args.injector_args
     if "--" in injector_args: injector_args.remove("--")
-
+    
     if not args.len and not args.unk and not args.dis and not args.ill:
         print("warning: no search type (--len, --unk, --dis, --ill) specified, results will not be recorded.")
         raw_input()
-
+        
+    if args.logpath:
+        OUTPUT = args.logpath
+        LOG  = os.path.join(OUTPUT, "log")
+        SYNC = os.path.join(OUTPUT, "sync")
+        TICK = os.path.join(OUTPUT, "tick")
+        LAST = os.path.join(OUTPUT, "last")
+    else:
+        print("warning: no log output path (--out) specified, results will be recorded to %s" % OUTPUT)
+        # Wait to show message to user.
+        time.sleep(3)
+        # Create /tmp directory if it does not exist already, here we use much less strict checks.
+        if not os.path.exists(OUTPUT):
+            os.makedirs(OUTPUT)
+        
     if args.resume:
         if "-i" in injector_args:
             print("--resume is incompatible with -i")
@@ -812,11 +846,10 @@ def main():
                 insn = f.read()
                 injector_args.extend(['-i',insn])
         else:
-            print("no resume file found")
+            print("no 'last' resume file found in path %s" % OUTPUT)
             sys.exit(1)
 
-    if not os.path.exists(OUTPUT):
-        os.makedirs(OUTPUT)
+
 
     injector_bitness, errors = \
         subprocess.Popen(

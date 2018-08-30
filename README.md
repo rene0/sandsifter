@@ -133,6 +133,9 @@ Sifter flags:
 
 --low-mem
 	do not store results in memory
+
+--out
+    explicitly specify folder path to write sandsifter log files
 ```
 
 Injector flags:
