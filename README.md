@@ -29,7 +29,7 @@ The search will take from a few hours to a few days, depending on the speed of
 and complexity of your processor.  When it is complete, summarize the results:
 
 ```
-./summarize.py log {log_file}
+./sifter-summarize.py log {log_file}
 ```
 
 ![demo_summarizer](references/summarizer.png)
@@ -261,14 +261,14 @@ command line, or cycled via hotkeys.
 	graphical front end.  This can be done by running the injector directly:
 
 	```
-	sudo ./injector -P1 -t -0
+	sudo ./sifter-injector -P1 -t -0
 	```
 
 	To filter the results of a direct injector invocation, grep can be used.
 	For example,
 
 	```
-	sudo ./injector -P1 -r -0 | grep '\.r' | grep -v sigill
+	sudo ./sifter-injector -P1 -r -0 | grep '\.r' | grep -v sigill
 	```
 
 	searches for instructions for which the processor and disassembler disagreed
