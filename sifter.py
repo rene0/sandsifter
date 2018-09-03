@@ -33,7 +33,7 @@ try:
 except NameError:
     raw_input = input  # Python 3
 
-INJECTOR = ["/usr/bin/injector", "./injector"]
+INJECTOR = ["/usr/bin/sifter-injector", "./sifter-injector"]
 arch = ""
 
 OUTPUT = "/tmp/sandsifter/data/"
