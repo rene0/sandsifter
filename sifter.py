@@ -36,11 +36,11 @@ except NameError:
 INJECTOR = ["/usr/sbin/sifter-injector", "./sifter-injector"]
 arch = ""
 
-OUTPUT = "/tmp/sandsifter/data/"
-LOG  = OUTPUT + "log"
-SYNC = OUTPUT + "sync"
-TICK = OUTPUT + "tick"
-LAST = OUTPUT + "last"
+OUTPUT = os.path.join(os.environ.get('HOME'), '.local', 'share', 'sandsifter')
+LOG  = os.path.join(OUTPUT, 'log')
+SYNC = os.path.join(OUTPUT, 'sync')
+TICK = os.path.join(OUTPUT, 'tick')
+LAST = os.path.join(OUTPUT, 'last')
 
 class ThreadState:
     pause = False
