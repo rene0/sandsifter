@@ -36,7 +36,8 @@ except NameError:
 INJECTOR = ["/usr/sbin/sifter-injector", "./sifter-injector"]
 arch = ""
 
-OUTPUT = os.path.join(os.environ.get('HOME'), '.local', 'share', 'sandsifter')
+# Set default output path to $USER_HOME/.local/share/sandsifter, this works safely for root(sudo) and normal accounts
+OUTPUT = os.path.expanduser('~%s/.local/share/sandsifter' % os.environ.get('SUDO_USER', ''))
 LOG  = os.path.join(OUTPUT, 'log')
 SYNC = os.path.join(OUTPUT, 'sync')
 TICK = os.path.join(OUTPUT, 'tick')
