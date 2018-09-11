@@ -842,7 +842,7 @@ def main():
         TICK = os.path.join(OUTPUT, "tick")
         LAST = os.path.join(OUTPUT, "last")
     else:
-        print("warning: no log output path (--out) specified, results will be recorded to %s" % OUTPUT)
+	print("warning: no log output path (--out) specified, results will be recorded to %s \nManualy specify a (--out) output path if you want your results recorded elsewhere." % OUTPUT)
         # Wait to show message to user.
         time.sleep(3)
         # Create /tmp directory if it does not exist already, here we use much less strict checks.
