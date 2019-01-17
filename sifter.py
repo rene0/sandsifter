@@ -225,7 +225,7 @@ def is_valid_write_path(parser, arg):
         parser.error("warning: The path %s doesn't exist!\n\tChoose a different output path or create it." % arg)
 
 def result_string(insn, result):
-    s = "%30s %2d %2d %2d %2d (%s)\n" % (
+    s = b"%30s %2d %2d %2d %2d (%s)\n" % (
             hexlify(insn), result.valid,
             result.length, result.signum,
             result.sicode, hexlify(cstr2py(result.raw_insn)))
@@ -420,9 +420,9 @@ class Gui:
             for i in range(0, self.GRAYS):
                 curses.init_color(
                         self.GRAY_BASE + i,
-                        i * 1000 / (self.GRAYS - 1),
-                        i * 1000 / (self.GRAYS - 1),
-                        i * 1000 / (self.GRAYS - 1)
+                        int(i * 1000 / (self.GRAYS - 1)),
+                        int(i * 1000 / (self.GRAYS - 1)),
+                        int(i * 1000 / (self.GRAYS - 1))
                         )
                 curses.init_pair(
                         self.GRAY_BASE + i,
@@ -868,7 +868,7 @@ def main():
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
                 ).communicate()
-    arch = re.search(r".*ELF (..)-bit.*", injector_bitness.decode('utf-8')).group(0)
+    arch = re.search(r".*ELF (..)-bit.*", injector_bitness.decode('utf-8')).group(1)
 
     ts = ThreadState()
     signal.signal(signal.SIGINT, exit_handler)
