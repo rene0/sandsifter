@@ -26,7 +26,7 @@ import code
 import copy
 from ctypes import *
 
-__version__ = '1.03'
+__version__ = '1.10'
 
 INJECTOR = ["/usr/sbin/sifter-injector", "./sifter-injector"]
 arch = ""
@@ -108,6 +108,8 @@ class Tee(object):
     def write(self, data):
         self.file.write(data)
         self.stdout.write(data)
+    def flush(self):
+        pass;
 
 # capstone disassembler
 md = None
@@ -119,7 +121,7 @@ def disas_capstone(b):
         else:
             md = Cs(CS_ARCH_X86, CS_MODE_32)
     try:
-        (address, size, mnemonic, op_str) = next(md.disasm_lite(b, 0, 1))
+        (address, size, mnemonic, op_str) = next(md.disasm_lite(b.encode(), 0, 1))
     except StopIteration:
         mnemonic="(unk)"
         op_str=""
@@ -225,11 +227,13 @@ def is_valid_write_path(parser, arg):
         parser.error("warning: The path %s doesn't exist!\n\tChoose a different output path or create it." % arg)
 
 def result_string(insn, result):
-    s = b"%30s %2d %2d %2d %2d (%s)\n" % (
-            hexlify(insn), result.valid,
+    s = "%30s %2d %2d %2d %2d (%s)\n" % (
+            hexlify(insn.encode()).decode('utf-8'), result.valid,
             result.length, result.signum,
-            result.sicode, hexlify(cstr2py(result.raw_insn)))
+            result.sicode, hexlify(cstr2py(result.raw_insn).encode()).decode('utf-8'))
+    
     return s
+
 
 class Injector:
     process = None
@@ -474,7 +478,7 @@ class Gui:
 
     def bracket(self, window, x, y, h, color):
         for i in range(1, h - 1):
-            y = int(y) // magic hack to disspell magic floats
+            y = int(y) # magic hack to disspell magic floats
             window.addch(y + i, x, curses.ACS_VLINE, color)
 
         window.addch(y, x, curses.ACS_ULCORNER, color)
@@ -482,7 +486,7 @@ class Gui:
 
     def vaddstr(self, window, x, y, s, color):
         for i in range(0, len(s)):
-            y = int(y) // magic hack to disspell magic floats
+            y = int(y) # magic hack to disspell magic floats
             window.addch(y + i, x, s[i], color)
 
     def draw(self):
@@ -490,13 +494,13 @@ class Gui:
             self.stdscr.erase()
 
             # constants
-            left = self.sx + self.INDENT
-            top = self.sy
-            top_bracket_height = self.T.IL
-            top_bracket_middle = self.T.IL / 2
+            left = int(self.sx + self.INDENT)
+            top = int(self.sy)
+            top_bracket_height = int(self.T.IL)
+            top_bracket_middle = int(self.T.IL / 2)
             mne_width = 10
             op_width = 45
-            raw_width = (16*2)
+            raw_width = int(16*2)
 
             # render log bracket
             self.bracket(self.stdscr, left - 1, top, top_bracket_height + 2, self.gray(1))
@@ -513,7 +517,7 @@ class Gui:
                         mnemonic,
                         op_str,
                         self.T.r.length,
-                        "%s" % hexlify(synth_insn)
+                        "%s" % hexlify(synth_insn.encode()).decode('utf-8')
                     )
                 )
 
@@ -618,7 +622,7 @@ class Gui:
                     "%s" % (int_to_comma(self.T.ic)), self.gray(1))
             # render rate
             self.stdscr.addstr(top + top_bracket_height + 3, left, 
-                    "  %d/s%s" % (rate, " " * min(rate / self.RATE_FACTOR, 100)), curses.A_REVERSE)
+                    "  %d/s%s" % (rate, " " * int(round(min(rate / self.RATE_FACTOR, 100)))), curses.A_REVERSE)
             # render artifact count
             self.stdscr.addstr(top + top_bracket_height + 4, left, "#", self.gray(.5))
             self.stdscr.addstr(top + top_bracket_height + 4, left + 2, 
@@ -634,7 +638,7 @@ class Gui:
                 try:
                     for (i, r) in enumerate(self.T.al):
                         y = top_bracket_height + 5 + i
-                        insn_hex = hexlify(cstr2py(r.raw_insn))
+                        insn_hex = hexlify(cstr2py(r.raw_insn).encode()).decode('utf-8')
 
                         # unexplainable hack to remove some of the unexplainable
                         # flicker on my console.  a bug in ncurses?  doesn't
@@ -702,7 +706,7 @@ class Gui:
                 self.ticks = self.ticks + 1
                 if self.ticks & self.TICK_MASK == 0:
                     with open(TICK, 'w') as f:
-                        f.write("%s" % hexlify(synth_insn))
+                        f.write("%s" % hexlify(synth_insn.encode()).decode('utf-8'))
 
             time.sleep(self.TIME_SLICE)
 
@@ -786,7 +790,7 @@ def main():
         # Pick the first valid injector entry, this is not ideal but it should work fine
         INJECTOR = INJECTOR[0]
         print("Using injector from: %s" % INJECTOR)
-        print("Injector BuildID: %s" % subprocess.check_output(['eu-readelf', '-n', INJECTOR]).split()[-1])
+        print("Injector BuildID: %s" % subprocess.check_output(['eu-readelf', '-n', INJECTOR]).split()[-1].decode('utf-8'))
         
 
     parser = argparse.ArgumentParser()
