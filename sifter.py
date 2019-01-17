@@ -6,7 +6,7 @@
 # github.com/xoreaxeaxeax/sandsifter // domas // @xoreaxeaxeax
 #
 
-# run as sudo for best results
+# run as sudo for best resultsi
 
 from __future__ import print_function
 import signal
@@ -32,6 +32,8 @@ try:
     raw_input          # Python 2
 except NameError:
     raw_input = input  # Python 3
+
+__version__ = '1.03'
 
 INJECTOR = ["/usr/sbin/sifter-injector", "./sifter-injector"]
 arch = ""
@@ -783,7 +785,8 @@ def main():
     else:
         # Pick the first valid injector entry, this is not ideal but it should work fine
         INJECTOR = INJECTOR[0]
-        print("info: Using injector from: %s" % INJECTOR)
+        print("Using injector from: %s" % INJECTOR)
+        print("Injector BuildID: %s" % subprocess.check_output(['eu-readelf', '-n', INJECTOR]).split()[-1])
         
 
     parser = argparse.ArgumentParser()
@@ -824,6 +827,7 @@ def main():
             help="folder path to write sandsifter log files", metavar="FOLDER",
             type=lambda out: is_valid_write_path(parser, out)
             )
+    parser.add_argument("--version", action="version", version="Sandsifter %(prog)s V" + str(__version__) )
     
     parser.add_argument("injector_args", nargs=argparse.REMAINDER)
 
