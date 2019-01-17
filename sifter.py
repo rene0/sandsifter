@@ -1,5 +1,4 @@
-#!/usr/bin/env python2
-#^ Force python2 for now
+#!/usr/bin/env python3
 # instruction injector frontend
 
 #
@@ -8,7 +7,6 @@
 
 # run as sudo for best resultsi
 
-from __future__ import print_function
 import signal
 import sys
 import subprocess
@@ -27,11 +25,6 @@ import argparse
 import code
 import copy
 from ctypes import *
-
-try:
-    raw_input          # Python 2
-except NameError:
-    raw_input = input  # Python 3
 
 __version__ = '1.03'
 
@@ -126,7 +119,7 @@ def disas_capstone(b):
         else:
             md = Cs(CS_ARCH_X86, CS_MODE_32)
     try:
-        (address, size, mnemonic, op_str) = md.disasm_lite(b, 0, 1).next()
+        (address, size, mnemonic, op_str) = next(md.disasm_lite(b, 0, 1))
     except StopIteration:
         mnemonic="(unk)"
         op_str=""
@@ -424,7 +417,7 @@ class Gui:
             self.COLOR_GREEN = curses.COLOR_GREEN
             '''
 
-            for i in xrange(0, self.GRAYS):
+            for i in range(0, self.GRAYS):
                 curses.init_color(
                         self.GRAY_BASE + i,
                         i * 1000 / (self.GRAYS - 1),
@@ -444,7 +437,7 @@ class Gui:
             self.COLOR_RED = curses.COLOR_RED
             self.COLOR_GREEN = curses.COLOR_GREEN
 
-            for i in xrange(0, self.GRAYS):
+            for i in range(0, self.GRAYS):
                 curses.init_pair(
                         self.GRAY_BASE + i,
                         self.COLOR_WHITE,
@@ -464,10 +457,10 @@ class Gui:
             return curses.color_pair(self.WHITE)
 
     def box(self, window, x, y, w, h, color):
-        for i in xrange(1, w - 1):
+        for i in range(1, w - 1):
             window.addch(y, x + i, curses.ACS_HLINE, color)
             window.addch(y + h - 1, x + i, curses.ACS_HLINE, color)
-        for i in xrange(1, h - 1):
+        for i in range(1, h - 1):
             window.addch(y + i, x, curses.ACS_VLINE, color)
             window.addch(y + i, x + w - 1, curses.ACS_VLINE, color)
         window.addch(y, x, curses.ACS_ULCORNER, color)
@@ -476,13 +469,13 @@ class Gui:
         window.addch(y + h - 1, x + w - 1, curses.ACS_LRCORNER, color)
 
     def bracket(self, window, x, y, h, color):
-        for i in xrange(1, h - 1):
+        for i in range(1, h - 1):
             window.addch(y + i, x, curses.ACS_VLINE, color)
         window.addch(y, x, curses.ACS_ULCORNER, color)
         window.addch(y + h - 1, x, curses.ACS_LLCORNER, color)
 
     def vaddstr(self, window, x, y, s, color):
-        for i in xrange(0, len(s)):
+        for i in range(0, len(s)):
             window.addch(y + i, x, s[i], color)
 
     def draw(self):
@@ -828,18 +821,18 @@ def main():
             type=lambda out: is_valid_write_path(parser, out)
             )
     parser.add_argument("--version", action="version", version="Sandsifter %(prog)s V" + str(__version__) )
-    
+
     parser.add_argument("injector_args", nargs=argparse.REMAINDER)
 
     args = parser.parse_args()
 
     injector_args = args.injector_args
     if "--" in injector_args: injector_args.remove("--")
-    
+
     if not args.len and not args.unk and not args.dis and not args.ill:
         print("warning: no search type (--len, --unk, --dis, --ill) specified, results will not be recorded.")
-        raw_input()
-        
+        input()
+
     if args.logpath:
         OUTPUT = args.logpath
         LOG  = os.path.join(OUTPUT, "log")
@@ -847,13 +840,13 @@ def main():
         TICK = os.path.join(OUTPUT, "tick")
         LAST = os.path.join(OUTPUT, "last")
     else:
-	print("warning: no log output path (--out) specified, results will be recorded to %s \nManualy specify a (--out) output path if you want your results recorded elsewhere." % OUTPUT)
+        print("warning: no log output path (--out) specified, results will be recorded to %s \nManualy specify a (--out) output path if you want your results recorded elsewhere." % OUTPUT)
         # Wait to show message to user.
         time.sleep(3)
         # Create /tmp directory if it does not exist already, here we use much less strict checks.
         if not os.path.exists(OUTPUT):
             os.makedirs(OUTPUT)
-        
+
     if args.resume:
         if "-i" in injector_args:
             print("--resume is incompatible with -i")
@@ -875,7 +868,7 @@ def main():
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
                 ).communicate()
-    arch = re.search(r".*(..)-bit.*", injector_bitness).group(1)
+    arch = re.search(r".*ELF (..)-bit.*", injector_bitness.decode('utf-8')).group(0)
 
     ts = ThreadState()
     signal.signal(signal.SIGINT, exit_handler)
