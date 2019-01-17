@@ -457,6 +457,10 @@ class Gui:
             return curses.color_pair(self.WHITE)
 
     def box(self, window, x, y, w, h, color):
+        x = int(x)
+        y = int(y)
+        w = int(w)
+        h = int(h)
         for i in range(1, w - 1):
             window.addch(y, x + i, curses.ACS_HLINE, color)
             window.addch(y + h - 1, x + i, curses.ACS_HLINE, color)
@@ -470,12 +474,15 @@ class Gui:
 
     def bracket(self, window, x, y, h, color):
         for i in range(1, h - 1):
+            y = int(y) // magic hack to disspell magic floats
             window.addch(y + i, x, curses.ACS_VLINE, color)
+
         window.addch(y, x, curses.ACS_ULCORNER, color)
         window.addch(y + h - 1, x, curses.ACS_LLCORNER, color)
 
     def vaddstr(self, window, x, y, s, color):
         for i in range(0, len(s)):
+            y = int(y) // magic hack to disspell magic floats
             window.addch(y + i, x, s[i], color)
 
     def draw(self):
