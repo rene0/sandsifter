@@ -6,7 +6,7 @@
 # github.com/xoreaxeaxeax/sandsifter // domas // @xoreaxeaxeax
 #
 
-# run as sudo for best results
+# run as sudo for best resultsi
 
 from __future__ import print_function
 import signal
@@ -27,13 +27,16 @@ import argparse
 import code
 import copy
 from ctypes import *
+import platform
 
 try:
     raw_input          # Python 2
 except NameError:
     raw_input = input  # Python 3
 
-INJECTOR = ["/usr/sbin/sifter-injector", "./sifter-injector"]
+__version__ = '1.03'
+
+INJECTOR = ["/usr/sbin/sifter-injector", "/usr/local/sbin/sifter-injector", "./sifter-injector"]
 arch = ""
 
 # Set default output path to $USER_HOME/.local/share/sandsifter, this works safely for root(sudo) and normal accounts
@@ -705,7 +708,10 @@ class Gui:
             time.sleep(self.TIME_SLICE)
 
 def get_cpu_info():
-    with open("/proc/cpuinfo", "r") as f:
+    cpu_path = "/proc/cpuinfo"
+    if platform.system == "FreeBSD":
+        cpu_path = "/compat/linux%s" % cpu_path
+    with open(cpu_path, "r") as f:
         cpu = [l.strip() for l in f.readlines()[:7]]
     return cpu
 
@@ -783,7 +789,8 @@ def main():
     else:
         # Pick the first valid injector entry, this is not ideal but it should work fine
         INJECTOR = INJECTOR[0]
-        print("info: Using injector from: %s" % INJECTOR)
+        print("Using injector from: %s" % INJECTOR)
+        print("Injector BuildID: %s" % subprocess.check_output(['eu-readelf', '-n', INJECTOR]).split()[-1])
         
 
     parser = argparse.ArgumentParser()
@@ -824,6 +831,7 @@ def main():
             help="folder path to write sandsifter log files", metavar="FOLDER",
             type=lambda out: is_valid_write_path(parser, out)
             )
+    parser.add_argument("--version", action="version", version="Sandsifter %(prog)s V" + str(__version__) )
     
     parser.add_argument("injector_args", nargs=argparse.REMAINDER)
 
