@@ -84,7 +84,7 @@ cs_insn *capstone_insn;
 #	else
 #		define IP gregs[REG_EIP]
 #	endif
-#else
+#elif defined(__FreeBSD__)
 #	include <pthread_np.h>
 	typedef cpuset_t cpu_set_t;
 #	if __x86_64__
