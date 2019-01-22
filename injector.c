@@ -308,6 +308,12 @@ ignore_op_t opcode_blacklist[MAX_BLACKLIST]={
 	{ "\xcd\x80", "int 0x80" },
 	/* as will syscall */
 	{ "\x0f\x05", "syscall" },
+#ifdef __FreeBSD__
+	/* int 92 on FreeBSD triggers DTrace, which will trigger SIGSYS */
+	{ "\xcd\x92", "int 0x92" },
+	/* int 93 on FreeBSD is used by Xen */
+	{ "\xcd\x93", "int 0x93" },
+#endif
 	/* ud2 is an undefined opcode, and messes up a length differential search
 	 * b/c of the fault it throws */
 	{ "\x0f\xb9", "ud2" },
