@@ -1469,7 +1469,7 @@ int main(int argc, char** argv)
 		null_p=mmap(0, PAGE_SIZE, PROT_READ|PROT_WRITE,
 			MAP_FIXED|MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 		if (null_p==MAP_FAILED) {
-			printf("null access requires running as root\n");
+			printf("null access requires running as root, %s\n", strerror(errno));
 			exit(1);
 		}
 	}
