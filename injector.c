@@ -77,10 +77,23 @@ cs_insn *capstone_insn;
 
 /* 32 vs 64 */
 
-#if __x86_64__
-	#define IP REG_RIP 
+#ifdef __linux__
+#	define EFL gregs[REG_EFL]
+#	if __x86_64__
+#		define IP gregs[REG_RIP]
+#	else
+#		define IP gregs[REG_EIP]
+#	endif
 #else
-	#define IP REG_EIP 
+#	include <pthread_np.h>
+	typedef cpuset_t cpu_set_t;
+#	if __x86_64__
+#		define IP mc_rip
+#		define EFL mc_rflags
+#	else
+#		define IP mc_eip
+#		define EFL mc_eflags
+#	endif
 #endif
 
 /* leave state as 0 */
@@ -155,7 +168,9 @@ state_t inject_state={
 /* x86/64 */
 
 #define UD2_SIZE  2
+#ifdef __linux__
 #define PAGE_SIZE 4096
+#endif
 #define TF        0x100
 
 /* injection */
@@ -850,7 +865,7 @@ void inject(int insn_size)
 void state_handler(int signum, siginfo_t* si, void* p)
 {
 	fault_context=((ucontext_t*)p)->uc_mcontext;
-	((ucontext_t*)p)->uc_mcontext.gregs[IP]+=UD2_SIZE;
+	((ucontext_t*)p)->uc_mcontext.IP+=UD2_SIZE;
 }
 
 void fault_handler(int signum, siginfo_t* si, void* p)
@@ -863,7 +878,7 @@ void fault_handler(int signum, siginfo_t* si, void* p)
 
 	/* make an initial estimate on the instruction length from the fault address */
 	insn_length=
-		(uintptr_t)uc->uc_mcontext.gregs[IP]-(uintptr_t)packet-preamble_length;
+		(uintptr_t)uc->uc_mcontext.IP-(uintptr_t)packet-preamble_length;
 
 	if (insn_length<0) {
 		insn_length=JMP_LENGTH;
@@ -880,9 +895,13 @@ void fault_handler(int signum, siginfo_t* si, void* p)
 		(signum==SIGSEGV||signum==SIGBUS)?(uint32_t)(uintptr_t)si->si_addr:(uint32_t)-1
 	};
 
+#ifdef __linux__
 	memcpy(uc->uc_mcontext.gregs, fault_context.gregs, sizeof(fault_context.gregs));
-	uc->uc_mcontext.gregs[IP]=(uintptr_t)&resume;
-	uc->uc_mcontext.gregs[REG_EFL]&=~TF;
+#else
+	memcpy(&uc->uc_mcontext, &fault_context, sizeof(fault_context));
+#endif
+	uc->uc_mcontext.IP=(uintptr_t)&resume;
+	uc->uc_mcontext.EFL&=~TF;
 }
 
 void configure_sig_handler(void (*handler)(int, siginfo_t*, void*))
@@ -1341,7 +1360,12 @@ void pin_core(void)
 		cpu_set_t mask;
 		CPU_ZERO(&mask);
 		CPU_SET(config.core,&mask);
+#ifdef __linux__
 		if (sched_setaffinity(0, sizeof(mask), &mask)) {
+#else
+		if (cpuset_setaffinity(CPU_LEVEL_WHICH, CPU_WHICH_PID,
+		    -1, sizeof(mask), &mask)) {
+#endif
 			printf("error: failed to set cpu\n");
 			exit(1);
 		}

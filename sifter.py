@@ -27,13 +27,14 @@ import argparse
 import code
 import copy
 from ctypes import *
+import platform
 
 try:
     raw_input          # Python 2
 except NameError:
     raw_input = input  # Python 3
 
-INJECTOR = ["/usr/sbin/sifter-injector", "./sifter-injector"]
+INJECTOR = ["/usr/sbin/sifter-injector", "/usr/local/sbin/sifter-injector", "./sifter-injector"]
 arch = ""
 
 # Set default output path to $USER_HOME/.local/share/sandsifter, this works safely for root(sudo) and normal accounts
@@ -705,7 +706,10 @@ class Gui:
             time.sleep(self.TIME_SLICE)
 
 def get_cpu_info():
-    with open("/proc/cpuinfo", "r") as f:
+    cpu_path = "/proc/cpuinfo"
+    if platform.system == "FreeBSD":
+        cpu_path = "/compat/linux%s" % cpu_path
+    with open(cpu_path, "r") as f:
         cpu = [l.strip() for l in f.readlines()[:7]]
     return cpu
 
