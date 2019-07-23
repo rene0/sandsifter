@@ -214,7 +214,8 @@ inj_t inj;
 
 static const insn_t null_insn={};
 
-mcontext_t fault_context;
+static ucontext_t fault_context;
+static volatile int returning_from_sig;
 
 /* feedback */
 
@@ -377,7 +378,6 @@ bool has_opcode(uint8_t*);
 bool has_prefix(uint8_t*);
 void preamble(void);
 void inject(int);
-void state_handler(int, siginfo_t*, void*);
 void fault_handler(int, siginfo_t*, void*);
 void configure_sig_handler(void (*)(int, siginfo_t*, void*));
 void give_result(FILE*);
@@ -763,7 +763,6 @@ void inject(int insn_size)
 
 	int i;
 	int preamble_length=(&preamble_end-&preamble_start);
-	static bool have_state=false;
 
 	if (!USE_TF) { preamble_length=0; }
 
@@ -787,12 +786,10 @@ void inject(int insn_size)
 
 	dummy_stack.dummy_stack_lo[0]=0;
 
-	if (!have_state) {
-		/* optimization: only get state first time */
-		have_state=true;
-		configure_sig_handler(state_handler);
-		__asm__ __volatile__ ("ud2\n");
-	}
+	returning_from_sig = 0;
+	getcontext(&fault_context);
+	if(returning_from_sig)
+		return;
 
 	configure_sig_handler(fault_handler);
 
@@ -872,12 +869,6 @@ void inject(int insn_size)
 	;
 }
 
-void state_handler(int signum, siginfo_t* si, void* p)
-{
-	fault_context=((ucontext_t*)p)->uc_mcontext;
-	((ucontext_t*)p)->uc_mcontext.IP+=UD2_SIZE;
-}
-
 void fault_handler(int signum, siginfo_t* si, void* p)
 {
 	int insn_length;
@@ -905,13 +896,8 @@ void fault_handler(int signum, siginfo_t* si, void* p)
 		(signum==SIGSEGV||signum==SIGBUS)?(uint32_t)(uintptr_t)si->si_addr:(uint32_t)-1
 	};
 
-#ifdef __linux__
-	memcpy(uc->uc_mcontext.gregs, fault_context.gregs, sizeof(fault_context.gregs));
-#else
-	memcpy(&uc->uc_mcontext, &fault_context, sizeof(fault_context));
-#endif
-	uc->uc_mcontext.IP=(uintptr_t)&resume;
-	uc->uc_mcontext.EFL&=~TF;
+	returning_from_sig = 1;
+	setcontext(&fault_context);
 }
 
 void configure_sig_handler(void (*handler)(int, siginfo_t*, void*))
