@@ -23,6 +23,7 @@
 #include <sched.h>
 #include <pthread.h>
 #include <sys/wait.h>
+#include <stddef.h>
 
 /* configuration */
 
@@ -835,28 +836,31 @@ void inject(int insn_size)
 			  [packet]"m"(packet)
 			);
 #else
+	dummy_stack.dummy_stack_lo[0] = (uint64_t)packet;
 	__asm__ __volatile__ ("\
-			mov %[eax], %%eax \n\
-			mov %[ebx], %%ebx \n\
-			mov %[ecx], %%ecx \n\
-			mov %[edx], %%edx \n\
-			mov %[esi], %%esi \n\
-			mov %[edi], %%edi \n\
-			mov %[ebp], %%ebp \n\
-			mov %[esp], %%esp \n\
-			jmp *%[packet]    \n\
+			mov %[dummy_stack], %%esp \n\
+			mov %[inject_state], %%ebp\n\
+			mov %c[eax](%%ebp), %%eax \n\
+			mov %c[ebx](%%ebp), %%ebx \n\
+			mov %c[ecx](%%ebp), %%ecx \n\
+			mov %c[edx](%%ebp), %%edx \n\
+			mov %c[esi](%%ebp), %%esi \n\
+			mov %c[edi](%%ebp), %%edi \n\
+			mov %c[ebp](%%ebp), %%ebp \n\
+			ret    \n\
 			"
 			:
 			:
-			[eax]"m"(inject_state.eax),
-			[ebx]"m"(inject_state.ebx),
-			[ecx]"m"(inject_state.ecx),
-			[edx]"m"(inject_state.edx),
-			[esi]"m"(inject_state.esi),
-			[edi]"m"(inject_state.edi),
-			[ebp]"m"(inject_state.ebp),
-			[esp]"i"(&dummy_stack.dummy_stack_lo),
-			[packet]"m"(packet)
+			[inject_state]"r"(&inject_state),
+			[eax]"i"(offsetof(state_t, eax)),
+			[ebx]"i"(offsetof(state_t, ebx)),
+			[ecx]"i"(offsetof(state_t, ecx)),
+			[edx]"i"(offsetof(state_t, edx)),
+			[esi]"i"(offsetof(state_t, esi)),
+			[edi]"i"(offsetof(state_t, edi)),
+			[ebp]"i"(offsetof(state_t, ebp)),
+			[dummy_stack]"r"(&dummy_stack.dummy_stack_lo),
+			[st_offset]"i"(offsetof(typeof(dummy_stack), dummy_stack_lo))
 			);
 #endif
 
