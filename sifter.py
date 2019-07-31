@@ -34,7 +34,7 @@ try:
 except NameError:
     raw_input = input  # Python 3
 
-__version__ = '1.03'
+__version__ = '1.04'
 
 INJECTOR = ["/usr/sbin/sifter-injector", "/usr/local/sbin/sifter-injector", "./sifter-injector"]
 arch = ""
