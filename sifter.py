@@ -709,7 +709,7 @@ class Gui:
 
 def get_cpu_info():
     cpu_path = "/proc/cpuinfo"
-    if platform.system == "FreeBSD":
+    if platform.system() == "FreeBSD":
         cpu_path = "/compat/linux%s" % cpu_path
     with open(cpu_path, "r") as f:
         cpu = [l.strip() for l in f.readlines()[:7]]
@@ -790,7 +790,7 @@ def main():
         # Pick the first valid injector entry, this is not ideal but it should work fine
         INJECTOR = INJECTOR[0]
         print("Using injector from: %s" % INJECTOR)
-        if platform.system != "FreeBSD":
+        if platform.system() != "FreeBSD":
             print("Injector BuildID: %s" % subprocess.check_output(['eu-readelf', '-n', INJECTOR]).split()[-1])
         
 
