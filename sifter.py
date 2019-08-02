@@ -790,7 +790,8 @@ def main():
         # Pick the first valid injector entry, this is not ideal but it should work fine
         INJECTOR = INJECTOR[0]
         print("Using injector from: %s" % INJECTOR)
-        print("Injector BuildID: %s" % subprocess.check_output(['eu-readelf', '-n', INJECTOR]).split()[-1])
+        if platform.system != "FreeBSD":
+            print("Injector BuildID: %s" % subprocess.check_output(['eu-readelf', '-n', INJECTOR]).split()[-1])
         
 
     parser = argparse.ArgumentParser()
